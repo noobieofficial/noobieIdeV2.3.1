@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noobie Web IDE</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --warning-color: #ca8a04;
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: var(--surface-color);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .status-bar {
+            background: var(--surface-color);
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+
+        .status-dot.disconnected {
+            background: var(--error-color);
+        }
+
+        .status-dot.executing {
+            background: var(--warning-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .editor-header {
+            background: var(--surface-color);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            padding-top: 40px;
+        }
+
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            background: var(--surface-color);
+            color: var(--text-muted);
+            padding: 1rem 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border-right: 1px solid var(--border-color);
+            white-space: pre; /* IMPORTANTE: serve per \n */
+            user-select: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+
+
+        .editor {
+            width: 100%;
+            height: 100%;
+            padding: 1rem 1rem 1rem 60px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: none;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            tab-size: 4;
+            white-space: pre;   /* oppure pre-wrap se vuoi */
+            overflow-wrap: normal;
+            overflow-x: auto;
+            white-space: pre; /* blocca word wrap */
+        }
+
+
+        .editor:focus {
+            background: var(--bg-color);
+        }
+
+        .output-panel {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+        }
+
+        .output-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .output-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output {
+            flex: 1;
+            padding: 1rem;
+            background: #111827;
+            color: #f9fafb;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .output-line.error {
+            color: #fca5a5;
+        }
+
+        .output-line.success {
+            color: #86efac;
+        }
+
+        .output-line.warning {
+            color: #fbbf24;
+        }
+
+        .output-line.info {
+            color: #7dd3fc;
+        }
+
+        .output-line.input-echo {
+            color: #c084fc;
+            font-weight: bold;
+        }
+
+        .input-panel {
+            padding: 1rem;
+            background: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .input-panel.active {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .input-prompt {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            min-width: 100px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .current-line-highlight {
+            background: rgba(37, 99, 235, 0.1);
+            border-left: 3px solid var(--primary-color);
+            padding-left: 0.5rem;
+            margin-left: -0.5rem;
+        }
+
+        .error-line-highlight {
+            background: rgba(220, 38, 38, 0.1);
+            border-left: 3px solid var(--error-color);
+            padding-left: 0.5rem;
+            margin-left: -0.5rem;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--border-color);
+            overflow: hidden;
+            border-radius: 0 0 0.375rem 0.375rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-close:hover {
+            color: var(--text-color);
+        }
+
+        .spinner {
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .output-panel {
+                width: 100%;
+                height: 40%;
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Syntax highlighting */
+        .syntax-keyword { color: #569cd6; }
+        .syntax-type { color: #4ec9b0; }
+        .syntax-string { color: #ce9178; }
+        .syntax-number { color: #b5cea8; }
+        .syntax-comment { color: #6a9955; font-style: italic; }
+        .syntax-variable { color: #9cdcfe; }
+        .syntax-operator { color: #d4d4d4; }
+        .syntax-boolean { color: #569cd6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                Noobie Web IDE
+            </div>
+            <div class="toolbar">
+                <button class="btn btn-secondary" id="openFileBtn">
+                    <i class="fas fa-folder-open"></i>
+                    Open
+                </button>
+                <button class="btn btn-secondary" id="saveFileBtn">
+                    <i class="fas fa-save"></i>
+                    Save
+                </button>
+                <input type="file" id="fileInput" style="display:none;" />
+
+                <button class="btn btn-primary" id="runBtn">
+                    <i class="fas fa-play"></i>
+                    Run
+                </button>
+                <button class="btn btn-danger" id="stopBtn" disabled>
+                    <i class="fas fa-stop"></i>
+                    Stop
+                </button>
+                <button class="btn btn-secondary" id="pauseBtn" disabled>
+                    <i class="fas fa-pause"></i>
+                    Pause
+                </button>
+                <button class="btn btn-secondary" id="resetBtn">
+                    <i class="fas fa-refresh"></i>
+                    Reset
+                </button>
+                <button class="btn btn-secondary" id="clearBtn">
+                    <i class="fas fa-trash"></i>
+                    Clear
+                </button>
+            </div>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Ready</span>
+            </div>
+            <div id="executionInfo"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <div class="editor-title">
+                        <i class="fas fa-edit"></i>
+                        Code Editor
+                    </div>
+                    <div class="editor-actions">
+                        <button class="btn btn-secondary" id="executeLineBtn">
+                            <i class="fas fa-terminal"></i>
+                            Execute Line
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <div class="line-numbers" id="lineNumbers">1</div>
+                    <textarea class="editor" id="codeEditor" placeholder="Enter your Noobie code here..."></textarea>
+                </div>
+            </div>
+
+            <div class="output-panel">
+                <div class="output-header">
+                    <div class="output-title">
+                        <i class="fas fa-terminal"></i>
+                        Output
+                    </div>
+                    <button class="btn btn-secondary" id="clearOutputBtn">
+                        <i class="fas fa-eraser"></i>
+                        Clear
+                    </button>
+                </div>
+                <div class="output-container">
+                    <div class="output" id="output"></div>
+                    <div class="input-panel" id="inputPanel">
+                        <div class="input-prompt" id="inputPrompt">Input:</div>
+                        <input type="text" class="input-field" id="inputField" placeholder="Type your input here...">
+                        <button class="btn btn-primary" id="submitInputBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation Modal -->
+    <div class="modal" id="docModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Noobie Language Documentation</h3>
+                <button class="modal-close" id="closeDocModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>Basic Commands:</h4>
+                <ul>
+                    <li><strong>SAY</strong> - Output text: <code>SAY "Hello World"</code></li>
+                    <li><strong>CREATE</strong> - Create variable: <code>CREATE INT age 25</code></li>
+                    <li><strong>LISTEN</strong> - Get input: <code>LISTEN STR name "Enter name: "</code></li>
+                    <li><strong>CHANGE</strong> - Change variable: <code>CHANGE age 30</code></li>
+                    <li><strong>IF/ELSE/ENDO</strong> - Conditional: <code>IF @age > 18 DO ... ENDO</code></li>
+                </ul>
+                <h4>Data Types:</h4>
+                <ul>
+                    <li><strong>INT</strong> - Integer numbers</li>
+                    <li><strong>FLOAT</strong> - Decimal numbers</li>
+                    <li><strong>STR</strong> - Text strings</li>
+                    <li><strong>BOOL</strong> - Boolean values</li>
+                    <li><strong>CHAR</strong> - Single characters</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        class NoobieWebIDE {
+            constructor() {
+                this.socket = io();
+                this.isConnected = false;
+                this.isExecuting = false;
+                this.currentLine = 0;
+                this.totalLines = 0;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.setupSocketListeners();
+            }
+
+            initializeElements() {
+                // UI Elements
+                this.runBtn = document.getElementById('runBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.executeLineBtn = document.getElementById('executeLineBtn');
+                this.clearOutputBtn = document.getElementById('clearOutputBtn');
+                
+                this.codeEditor = document.getElementById('codeEditor');
+                this.lineNumbers = document.getElementById('lineNumbers');
+                this.output = document.getElementById('output');
+                
+                this.inputPanel = document.getElementById('inputPanel');
+                this.inputField = document.getElementById('inputField');
+                this.inputPrompt = document.getElementById('inputPrompt');
+                this.submitInputBtn = document.getElementById('submitInputBtn');
+                
+                this.statusDot = document.getElementById('statusDot');
+                this.statusText = document.getElementById('statusText');
+                this.executionInfo = document.getElementById('executionInfo');
+                this.progressFill = document.getElementById('progressFill');
+
+                this.openFileBtn = document.getElementById('openFileBtn');
+                this.saveFileBtn = document.getElementById('saveFileBtn');
+                this.fileInput = document.getElementById('fileInput');
+            }
+
+            setupEventListeners() {
+                // Toolbar buttons
+                this.runBtn.addEventListener('click', () => this.runCode());
+                this.stopBtn.addEventListener('click', () => this.stopExecution());
+                this.pauseBtn.addEventListener('click', () => this.pauseExecution());
+                this.resetBtn.addEventListener('click', () => this.resetInterpreter());
+                this.clearBtn.addEventListener('click', () => this.clearOutput());
+                this.executeLineBtn.addEventListener('click', () => this.executeCurrentLine());
+                this.clearOutputBtn.addEventListener('click', () => this.clearOutput());      
+                this.openFileBtn.addEventListener('click', () => this.fileInput.click());
+                this.fileInput.addEventListener('change', (e) => this.openFile(e));
+                this.saveFileBtn.addEventListener('click', () => this.saveFile());
+
+
+                // Input handling
+                this.submitInputBtn.addEventListener('click', () => this.submitInput());
+                this.inputField.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.submitInput();
+                    }
+                });
+                
+                // Editor events
+                this.codeEditor.addEventListener('input', () => this.updateLineNumbers());
+                this.codeEditor.addEventListener('scroll', () => this.syncLineNumbers());
+                this.codeEditor.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        this.insertTab();
+                    }
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        this.executeCurrentLine();
+                    }
+                    if (e.key === 'F5') {
+                        e.preventDefault();
+                        this.runCode();
+                    }
+                });
+                
+                // Window events
+                window.addEventListener('beforeunload', () => {
+                    if (this.isExecuting) {
+                        return 'Code is currently executing. Are you sure you want to leave?';
+                    }
+                });
+            }
+
+            setupSocketListeners() {
+                this.socket.on('connect', () => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus();
+                });
+
+                this.socket.on('disconnect', () => {
+                    this.isConnected = false;
+                    this.updateConnectionStatus();
+                });
+
+                this.socket.on('connected', (data) => {
+                    console.log('Connected to server:', data.session_id);
+                    this.addOutput('Connected to Noobie Web IDE', 'info');
+                });
+
+                this.socket.on('output', (data) => {
+                    this.addOutput(data.text, data.type);
+                });
+
+                this.socket.on('input_request', (data) => {
+                    this.showInputPanel(data.prompt);
+                });
+
+                this.socket.on('input_provided', (data) => {
+                    this.hideInputPanel();
+                });
+
+                this.socket.on('execution_started', (data) => {
+                    this.isExecuting = true;
+                    this.totalLines = data.total_lines;
+                    this.currentLine = 0;
+                    this.updateExecutionUI();
+                    this.addOutput('Execution started...', 'info');
+                });
+
+                this.socket.on('execution_finished', (data) => {
+                    this.isExecuting = false;
+                    this.updateExecutionUI();
+                    this.addOutput('Execution finished.', 'success');
+                    this.progressFill.style.width = '100%';
+                    setTimeout(() => {
+                        this.progressFill.style.width = '0%';
+                    }, 1000);
+                });
+
+                this.socket.on('execution_stopped', (data) => {
+                    this.isExecuting = false;
+                    this.updateExecutionUI();
+                    this.addOutput('Execution stopped by user.', 'warning');
+                });
+
+                this.socket.on('current_line', (data) => {
+                    this.currentLine = data.line_number;
+                    this.highlightCurrentLine(data.line_number);
+                    this.updateProgress();
+                });
+
+                this.socket.on('line_executed', (data) => {
+                    if (data.success) {
+                        this.addOutput(`✓ Line ${this.currentLine}: ${data.line}`, 'success');
+                    } else {
+                        this.addOutput(`✗ Line ${this.currentLine}: ${data.error}`, 'error');
+                        this.highlightErrorLine(this.currentLine);
+                    }
+                });
+
+                this.socket.on('interpreter_reset', (data) => {
+                    this.addOutput('Interpreter reset.', 'info');
+                    this.clearHighlights();
+                });
+
+                this.socket.on('error', (data) => {
+                    this.addOutput(`Error: ${data.message}`, 'error');
+                });
+            }
+
+            updateConnectionStatus() {
+                if (this.isConnected) {
+                    this.statusDot.classList.remove('disconnected');
+                    this.statusText.textContent = 'Connected';
+                } else {
+                    this.statusDot.classList.add('disconnected');
+                    this.statusText.textContent = 'Disconnected';
+                }
+            }
+
+            updateExecutionUI() {
+                if (this.isExecuting) {
+                    this.runBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.pauseBtn.disabled = false;
+                    this.statusDot.classList.add('executing');
+                    this.statusText.textContent = 'Executing...';
+                } else {
+                    this.runBtn.disabled = false;
+                    this.stopBtn.disabled = true;
+                    this.pauseBtn.disabled = true;
+                    this.statusDot.classList.remove('executing');
+                    this.statusText.textContent = this.isConnected ? 'Ready' : 'Disconnected';
+                }
+            }
+
+            updateProgress() {
+                if (this.totalLines > 0) {
+                    const progress = (this.currentLine / this.totalLines) * 100;
+                    this.progressFill.style.width = `${progress}%`;
+                    this.executionInfo.textContent = `Line ${this.currentLine} of ${this.totalLines}`;
+                }
+            }
+
+            runCode() {
+                if (!this.isConnected) {
+                    this.addOutput('Not connected to server!', 'error');
+                    return;
+                }
+
+                const code = this.codeEditor.value.trim();
+                if (!code) {
+                    this.addOutput('No code to execute!', 'warning');
+                    return;
+                }
+
+                this.clearHighlights();
+                this.socket.emit('execute_code', { code });
+            }
+
+            stopExecution() {
+                this.socket.emit('stop_execution');
+            }
+
+            pauseExecution() {
+                if (this.pauseBtn.textContent.includes('Pause')) {
+                    this.socket.emit('pause_execution');
+                    this.pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+                } else {
+                    this.socket.emit('resume_execution');
+                    this.pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                }
+            }
+
+            resetInterpreter() {
+                this.socket.emit('reset_interpreter');
+                this.clearHighlights();
+            }
+
+            executeCurrentLine() {
+                if (!this.isConnected) {
+                    this.addOutput('Not connected to server!', 'error');
+                    return;
+                }
+
+                const lines = this.codeEditor.value.split('\n');
+                const cursorPos = this.codeEditor.selectionStart;
+                const textBeforeCursor = this.codeEditor.value.substring(0, cursorPos);
+                const currentLineNumber = textBeforeCursor.split('\n').length - 1;
+                const currentLine = lines[currentLineNumber];
+
+                if (!currentLine || !currentLine.trim()) {
+                    this.addOutput('No code on current line!', 'warning');
+                    return;
+                }
+
+                this.socket.emit('execute_line', { line: currentLine });
+            }
+
+            clearOutput() {
+                this.output.innerHTML = '';
+            }
+
+            addOutput(text, type = 'normal') {
+                const line = document.createElement('div');
+                line.className = `output-line ${type}`;
+                
+                // Add timestamp
+                const timestamp = new Date().toLocaleTimeString();
+                line.innerHTML = `<span style="color: #64748b; font-size: 0.8em;">[${timestamp}]</span> ${this.escapeHtml(text)}`;
+                
+                this.output.appendChild(line);
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showInputPanel(prompt) {
+                this.inputPrompt.textContent = prompt || 'Input:';
+                this.inputPanel.classList.add('active');
+                this.inputField.focus();
+                this.inputField.value = '';
+            }
+
+            hideInputPanel() {
+                this.inputPanel.classList.remove('active');
+            }
+
+            submitInput() {
+                const input = this.inputField.value;
+                this.socket.emit('provide_input', { input });
+            }
+
+            updateLineNumbers() {
+                const lines = this.codeEditor.value.split('\n');
+                const lineNumbers = lines.map((_, index) => index + 1).join('\n');
+                this.lineNumbers.textContent = lineNumbers;
+            }
+
+
+            syncLineNumbers() {
+                this.lineNumbers.scrollTop = this.codeEditor.scrollTop;
+            }
+
+            insertTab() {
+                const start = this.codeEditor.selectionStart;
+                const end = this.codeEditor.selectionEnd;
+                const value = this.codeEditor.value;
+                
+                this.codeEditor.value = value.substring(0, start) + '    ' + value.substring(end);
+                this.codeEditor.selectionStart = this.codeEditor.selectionEnd = start + 4;
+            }
+
+            highlightCurrentLine(lineNumber) {
+                this.clearHighlights();
+                const lines = this.codeEditor.value.split('\n');
+                
+                // Visual feedback in editor would require more complex implementation
+                // For now, we'll just show it in the output
+                this.executionInfo.textContent = `Executing line ${lineNumber}: ${lines[lineNumber - 1]?.trim() || ''}`;
+            }
+
+            highlightErrorLine(lineNumber) {
+                // Similar to highlightCurrentLine, visual feedback would need more implementation
+                this.addOutput(`Error on line ${lineNumber}`, 'error');
+            }
+
+            clearHighlights() {
+                this.executionInfo.textContent = '';
+                this.progressFill.style.width = '0%';
+            }
+
+            openFile(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.codeEditor.value = ev.target.result;
+                    this.updateLineNumbers();
+                };
+                reader.readAsText(file);
+            }
+
+            saveFile() {
+                const blob = new Blob([this.codeEditor.value], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'code.noobie';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+        }
+
+        
+
+        // Initialize the IDE when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const ide = new NoobieWebIDE();
+            
+            // Add some sample code for demonstration
+            const sampleCode = `# Welcome to Noobie Web IDE!
+# Good Porgramming!`;
+
+            if (!ide.codeEditor.value.trim()) {
+                ide.codeEditor.value = sampleCode;
+                ide.updateLineNumbers();
+            }
+
+        });
+
+        
+
+    </script>
+</body>
+</html>
