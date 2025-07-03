@@ -20,6 +20,7 @@ from datetime import datetime
 import subprocess
 import io
 import contextlib
+import eventlet
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -488,4 +489,6 @@ if __name__ == '__main__':
     os.makedirs('static', exist_ok=True)
     
     # Run the application
+    eventlet.monkey_patch()
+
     socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
