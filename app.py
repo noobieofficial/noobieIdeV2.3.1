@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""
-Flask Web Application for Noobie Language Interpreter
-Real-time line-by-line execution with input handling
-"""
+
 import eventlet
 eventlet.monkey_patch()
+
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO, emit
 import os
