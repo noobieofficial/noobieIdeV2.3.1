@@ -41,23 +41,27 @@
 
         .header {
             background: var(--surface-color);
-            padding: 1rem;
+            padding: 0.75rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: bold;
             color: var(--primary-color);
+            white-space: nowrap;
         }
 
         .toolbar {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -70,6 +74,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
         }
 
         .btn:hover {
@@ -113,6 +118,7 @@
             align-items: center;
             font-size: 0.875rem;
             color: var(--text-muted);
+            min-height: 2.5rem;
         }
 
         .status-indicator {
@@ -126,6 +132,7 @@
             height: 8px;
             border-radius: 50%;
             background: var(--success-color);
+            flex-shrink: 0;
         }
 
         .status-dot.disconnected {
@@ -146,12 +153,14 @@
             flex: 1;
             display: flex;
             overflow: hidden;
+            min-height: 0;
         }
 
         .editor-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-width: 0;
             border-right: 1px solid var(--border-color);
         }
 
@@ -162,11 +171,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .editor-title {
             font-weight: 600;
             color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .editor-actions {
@@ -178,49 +191,50 @@
             flex: 1;
             position: relative;
             overflow: hidden;
-            padding-top: 40px;
+            display: flex;
+            min-height: 0;
         }
 
         .line-numbers {
-            position: absolute;
-            left: 0;
-            top: 0;
             width: 50px;
-            height: 100%;
             background: var(--surface-color);
             color: var(--text-muted);
             padding: 1rem 0.5rem;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.5rem;
             border-right: 1px solid var(--border-color);
-            white-space: pre; /* IMPORTANTE: serve per \n */
             user-select: none;
-            z-index: 1;
-            overflow: hidden;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            text-align: right;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
 
-
+        .line-numbers > div {
+            height: 1.5rem;
+            line-height: 1.5rem;
+            padding-right: 0.5rem;
+        }
 
         .editor {
-            width: 100%;
-            height: 100%;
-            padding: 1rem 1rem 1rem 60px;
+            flex: 1;
+            padding: 1rem;
             background: var(--bg-color);
             color: var(--text-color);
             border: none;
             outline: none;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.5rem;
             resize: none;
             tab-size: 4;
-            white-space: pre;   /* oppure pre-wrap se vuoi */
-            overflow-wrap: normal;
-            overflow-x: auto;
-            white-space: pre; /* blocca word wrap */
+            white-space: pre;
+            overflow: auto;
+            min-width: 0;
         }
-
 
         .editor:focus {
             background: var(--bg-color);
@@ -231,6 +245,7 @@
             display: flex;
             flex-direction: column;
             background: var(--surface-color);
+            min-width: 0;
         }
 
         .output-header {
@@ -239,17 +254,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .output-title {
             font-weight: 600;
             color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .output-container {
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .output {
@@ -263,6 +283,7 @@
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            min-height: 0;
         }
 
         .output-line {
@@ -295,6 +316,7 @@
             background: var(--surface-color);
             border-top: 1px solid var(--border-color);
             display: none;
+            flex-shrink: 0;
         }
 
         .input-panel.active {
@@ -306,7 +328,8 @@
         .input-prompt {
             color: var(--text-muted);
             font-size: 0.875rem;
-            min-width: 100px;
+            min-width: fit-content;
+            flex-shrink: 0;
         }
 
         .input-field {
@@ -317,6 +340,7 @@
             border: 1px solid var(--border-color);
             border-radius: 0.375rem;
             font-family: 'Courier New', monospace;
+            min-width: 0;
         }
 
         .input-field:focus {
@@ -324,25 +348,10 @@
             border-color: var(--primary-color);
         }
 
-        .current-line-highlight {
-            background: rgba(37, 99, 235, 0.1);
-            border-left: 3px solid var(--primary-color);
-            padding-left: 0.5rem;
-            margin-left: -0.5rem;
-        }
-
-        .error-line-highlight {
-            background: rgba(220, 38, 38, 0.1);
-            border-left: 3px solid var(--error-color);
-            padding-left: 0.5rem;
-            margin-left: -0.5rem;
-        }
-
         .progress-bar {
             height: 3px;
             background: var(--border-color);
             overflow: hidden;
-            border-radius: 0 0 0.375rem 0.375rem;
         }
 
         .progress-fill {
@@ -367,6 +376,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 1rem;
         }
 
         .modal-content {
@@ -375,7 +385,9 @@
             border-radius: 0.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             max-width: 500px;
-            width: 90%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -402,22 +414,55 @@
             color: var(--text-color);
         }
 
-        .spinner {
-            border: 2px solid var(--border-color);
-            border-top: 2px solid var(--primary-color);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+        /* Mobile button group */
+        .mobile-toolbar {
+            display: none;
+            background: var(--surface-color);
+            padding: 0.5rem;
+            border-top: 1px solid var(--border-color);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .mobile-toolbar-inner {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-toolbar .btn {
+            flex-shrink: 0;
         }
 
         /* Responsive design */
+        @media (max-width: 1024px) {
+            .output-panel {
+                width: 50%;
+            }
+        }
+
         @media (max-width: 768px) {
+            .header {
+                padding: 0.5rem;
+            }
+
+            .logo {
+                font-size: 1.1rem;
+            }
+
+            .btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            .btn i {
+                font-size: 0.875rem;
+            }
+
             .main-content {
                 flex-direction: column;
             }
@@ -425,20 +470,112 @@
             .editor-panel {
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
+                flex: 1 1 60%;
             }
             
             .output-panel {
                 width: 100%;
-                height: 40%;
+                flex: 1 1 40%;
             }
-            
+
+            .line-numbers {
+                width: 40px;
+                font-size: 12px;
+                padding: 0.75rem 0.25rem;
+            }
+
+            .line-numbers > div {
+                height: 1.5rem;
+                line-height: 1.5rem;
+                padding-right: 0.25rem;
+            }
+
+            .editor {
+                font-size: 12px;
+                padding: 0.75rem;
+            }
+
             .toolbar {
-                flex-wrap: wrap;
+                display: none;
             }
-            
-            .btn {
-                padding: 0.375rem 0.75rem;
+
+            .mobile-toolbar {
+                display: block;
+                padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+            }
+
+            .container {
+                padding-bottom: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                justify-content: center;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            .editor-actions {
+                display: none;
+            }
+
+            .line-numbers {
+                width: 35px;
+                font-size: 11px;
+            }
+
+            .line-numbers > div {
+                height: 1.5rem;
+                line-height: 1.5rem;
+                padding-right: 0.25rem;
+            }
+
+            .editor {
+                font-size: 11px;
+            }
+
+            .output {
+                font-size: 11px;
+            }
+
+            .modal-content {
+                padding: 1rem;
+            }
+
+            .status-bar {
                 font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+            }
+        }
+
+        /* Landscape mode adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .header {
+                padding: 0.25rem 0.5rem;
+            }
+
+            .status-bar {
+                display: none;
+            }
+
+            .editor-header, .output-header {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                flex-direction: row;
+            }
+
+            .editor-panel {
+                border-right: 1px solid var(--border-color);
+                border-bottom: none;
+            }
+
+            .output-panel {
+                width: 50%;
             }
         }
 
@@ -451,6 +588,23 @@
         .syntax-variable { color: #9cdcfe; }
         .syntax-operator { color: #d4d4d4; }
         .syntax-boolean { color: #569cd6; }
+
+        /* Touch-friendly adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .input-field {
+                min-height: 44px;
+            }
+
+            .modal-close {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -458,38 +612,38 @@
         <header class="header">
             <div class="logo">
                 <i class="fas fa-code"></i>
-                Noobie Web IDE
+                <span>Noobie Web IDE</span>
             </div>
             <div class="toolbar">
                 <button class="btn btn-secondary" id="openFileBtn">
                     <i class="fas fa-folder-open"></i>
-                    Open
+                    <span class="btn-text">Open</span>
                 </button>
                 <button class="btn btn-secondary" id="saveFileBtn">
                     <i class="fas fa-save"></i>
-                    Save
+                    <span class="btn-text">Save</span>
                 </button>
-                <input type="file" id="fileInput" style="display:none;" />
+                <input type="file" id="fileInput" style="display:none;" accept=".noobie,.txt" />
 
                 <button class="btn btn-primary" id="runBtn">
                     <i class="fas fa-play"></i>
-                    Run
+                    <span class="btn-text">Run</span>
                 </button>
                 <button class="btn btn-danger" id="stopBtn" disabled>
                     <i class="fas fa-stop"></i>
-                    Stop
+                    <span class="btn-text">Stop</span>
                 </button>
                 <button class="btn btn-secondary" id="pauseBtn" disabled>
                     <i class="fas fa-pause"></i>
-                    Pause
+                    <span class="btn-text">Pause</span>
                 </button>
                 <button class="btn btn-secondary" id="resetBtn">
                     <i class="fas fa-refresh"></i>
-                    Reset
+                    <span class="btn-text">Reset</span>
                 </button>
                 <button class="btn btn-secondary" id="clearBtn">
                     <i class="fas fa-trash"></i>
-                    Clear
+                    <span class="btn-text">Clear</span>
                 </button>
             </div>
         </header>
@@ -511,18 +665,18 @@
                 <div class="editor-header">
                     <div class="editor-title">
                         <i class="fas fa-edit"></i>
-                        Code Editor
+                        <span>Code Editor</span>
                     </div>
                     <div class="editor-actions">
                         <button class="btn btn-secondary" id="executeLineBtn">
                             <i class="fas fa-terminal"></i>
-                            Execute Line
+                            <span class="btn-text">Execute Line</span>
                         </button>
                     </div>
                 </div>
                 <div class="editor-container">
                     <div class="line-numbers" id="lineNumbers">1</div>
-                    <textarea class="editor" id="codeEditor" placeholder="Enter your Noobie code here..."></textarea>
+                    <textarea class="editor" id="codeEditor" placeholder="Enter your Noobie code here..." spellcheck="false"></textarea>
                 </div>
             </div>
 
@@ -530,11 +684,11 @@
                 <div class="output-header">
                     <div class="output-title">
                         <i class="fas fa-terminal"></i>
-                        Output
+                        <span>Output</span>
                     </div>
                     <button class="btn btn-secondary" id="clearOutputBtn">
                         <i class="fas fa-eraser"></i>
-                        Clear
+                        <span class="btn-text">Clear</span>
                     </button>
                 </div>
                 <div class="output-container">
@@ -544,11 +698,38 @@
                         <input type="text" class="input-field" id="inputField" placeholder="Type your input here...">
                         <button class="btn btn-primary" id="submitInputBtn">
                             <i class="fas fa-paper-plane"></i>
-                            Submit
+                            <span class="btn-text">Submit</span>
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile Toolbar -->
+    <div class="mobile-toolbar">
+        <div class="mobile-toolbar-inner">
+            <button class="btn btn-primary" id="mobileRunBtn">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="btn btn-danger" id="mobileStopBtn" disabled>
+                <i class="fas fa-stop"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileOpenBtn">
+                <i class="fas fa-folder-open"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileSaveBtn">
+                <i class="fas fa-save"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileResetBtn">
+                <i class="fas fa-refresh"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileClearBtn">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileExecuteLineBtn">
+                <i class="fas fa-terminal"></i>
+            </button>
         </div>
     </div>
 
@@ -593,6 +774,7 @@
                 this.initializeElements();
                 this.setupEventListeners();
                 this.setupSocketListeners();
+                this.setupResponsiveFeatures();
             }
 
             initializeElements() {
@@ -604,6 +786,15 @@
                 this.clearBtn = document.getElementById('clearBtn');
                 this.executeLineBtn = document.getElementById('executeLineBtn');
                 this.clearOutputBtn = document.getElementById('clearOutputBtn');
+                
+                // Mobile buttons
+                this.mobileRunBtn = document.getElementById('mobileRunBtn');
+                this.mobileStopBtn = document.getElementById('mobileStopBtn');
+                this.mobileOpenBtn = document.getElementById('mobileOpenBtn');
+                this.mobileSaveBtn = document.getElementById('mobileSaveBtn');
+                this.mobileResetBtn = document.getElementById('mobileResetBtn');
+                this.mobileClearBtn = document.getElementById('mobileClearBtn');
+                this.mobileExecuteLineBtn = document.getElementById('mobileExecuteLineBtn');
                 
                 this.codeEditor = document.getElementById('codeEditor');
                 this.lineNumbers = document.getElementById('lineNumbers');
@@ -637,6 +828,14 @@
                 this.fileInput.addEventListener('change', (e) => this.openFile(e));
                 this.saveFileBtn.addEventListener('click', () => this.saveFile());
 
+                // Mobile toolbar buttons
+                this.mobileRunBtn.addEventListener('click', () => this.runCode());
+                this.mobileStopBtn.addEventListener('click', () => this.stopExecution());
+                this.mobileOpenBtn.addEventListener('click', () => this.fileInput.click());
+                this.mobileSaveBtn.addEventListener('click', () => this.saveFile());
+                this.mobileResetBtn.addEventListener('click', () => this.resetInterpreter());
+                this.mobileClearBtn.addEventListener('click', () => this.clearOutput());
+                this.mobileExecuteLineBtn.addEventListener('click', () => this.executeCurrentLine());
 
                 // Input handling
                 this.submitInputBtn.addEventListener('click', () => this.submitInput());
@@ -669,6 +868,27 @@
                         return 'Code is currently executing. Are you sure you want to leave?';
                     }
                 });
+            }
+
+            setupResponsiveFeatures() {
+                // Resize observer for better line number sync
+                if (window.ResizeObserver) {
+                    const resizeObserver = new ResizeObserver(() => {
+                        this.updateLineNumbers();
+                    });
+                    resizeObserver.observe(this.codeEditor);
+                }
+
+                // Orientation change handler
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        this.updateLineNumbers();
+                        this.syncLineNumbers();
+                    }, 100);
+                });
+
+                // Initial setup
+                this.updateLineNumbers();
             }
 
             setupSocketListeners() {
@@ -763,12 +983,16 @@
                     this.runBtn.disabled = true;
                     this.stopBtn.disabled = false;
                     this.pauseBtn.disabled = false;
+                    this.mobileRunBtn.disabled = true;
+                    this.mobileStopBtn.disabled = false;
                     this.statusDot.classList.add('executing');
                     this.statusText.textContent = 'Executing...';
                 } else {
                     this.runBtn.disabled = false;
                     this.stopBtn.disabled = true;
                     this.pauseBtn.disabled = true;
+                    this.mobileRunBtn.disabled = false;
+                    this.mobileStopBtn.disabled = true;
                     this.statusDot.classList.remove('executing');
                     this.statusText.textContent = this.isConnected ? 'Ready' : 'Disconnected';
                 }
@@ -803,12 +1027,12 @@
             }
 
             pauseExecution() {
-                if (this.pauseBtn.textContent.includes('Pause')) {
+                if (this.pauseBtn.innerHTML.includes('Pause')) {
                     this.socket.emit('pause_execution');
-                    this.pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+                    this.pauseBtn.innerHTML = '<i class="fas fa-play"></i><span class="btn-text">Resume</span>';
                 } else {
                     this.socket.emit('resume_execution');
-                    this.pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                    this.pauseBtn.innerHTML = '<i class="fas fa-pause"></i><span class="btn-text">Pause</span>';
                 }
             }
 
@@ -877,10 +1101,24 @@
 
             updateLineNumbers() {
                 const lines = this.codeEditor.value.split('\n');
-                const lineNumbers = lines.map((_, index) => index + 1).join('\n');
-                this.lineNumbers.textContent = lineNumbers;
+                const lineCount = lines.length;
+                
+                // Clear existing content
+                this.lineNumbers.innerHTML = '';
+                
+                // Create line numbers as separate divs for perfect alignment
+                for (let i = 1; i <= lineCount; i++) {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.textContent = i;
+                    lineDiv.style.height = '1.5rem'; // Match line-height
+                    lineDiv.style.lineHeight = '1.5rem';
+                    this.lineNumbers.appendChild(lineDiv);
+                }
+                
+                // Ensure line numbers container matches editor height
+                const editorHeight = this.codeEditor.scrollHeight;
+                this.lineNumbers.style.minHeight = editorHeight + 'px';
             }
-
 
             syncLineNumbers() {
                 this.lineNumbers.scrollTop = this.codeEditor.scrollTop;
@@ -893,6 +1131,7 @@
                 
                 this.codeEditor.value = value.substring(0, start) + '    ' + value.substring(end);
                 this.codeEditor.selectionStart = this.codeEditor.selectionEnd = start + 4;
+                this.updateLineNumbers();
             }
 
             highlightCurrentLine(lineNumber) {
@@ -917,27 +1156,37 @@
             openFile(e) {
                 const file = e.target.files[0];
                 if (!file) return;
+                
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     this.codeEditor.value = ev.target.result;
                     this.updateLineNumbers();
+                    this.addOutput(`Loaded file: ${file.name}`, 'info');
+                };
+                reader.onerror = () => {
+                    this.addOutput(`Failed to load file: ${file.name}`, 'error');
                 };
                 reader.readAsText(file);
+                
+                // Reset file input
+                e.target.value = '';
             }
 
             saveFile() {
-                const blob = new Blob([this.codeEditor.value], { type: 'text/plain' });
+                const code = this.codeEditor.value;
+                const blob = new Blob([code], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'code.noobie';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                
+                this.addOutput('File saved: code.noobie', 'info');
             }
-
         }
-
-        
 
         // Initialize the IDE when the page loads
         document.addEventListener('DOMContentLoaded', () => {
@@ -945,17 +1194,45 @@
             
             // Add some sample code for demonstration
             const sampleCode = `# Welcome to Noobie Web IDE!
-# Good Porgramming!`;
+# A beginner-friendly programming environment
+
+# Let's start with a simple program
+SAY "Hello, World!" end
+
+# Create a variable
+CREATE INT age 0
+
+# Get user input
+LISTEN INT age "Enter your age: "
+
+# Make a decision
+IF @age >= 18 DO
+    SAY "You are an adult!" end
+ELSE
+    SAY "You are a minor!" end
+ENDO
+
+# Say goodbye
+SAY "Thanks for using Noobie!" end`;
 
             if (!ide.codeEditor.value.trim()) {
                 ide.codeEditor.value = sampleCode;
                 ide.updateLineNumbers();
             }
-
+            
+            // Handle responsive button text
+            const updateButtonText = () => {
+                const width = window.innerWidth;
+                const showText = width > 480;
+                
+                document.querySelectorAll('.btn-text').forEach(span => {
+                    span.style.display = showText ? 'inline' : 'none';
+                });
+            };
+            
+            updateButtonText();
+            window.addEventListener('resize', updateButtonText);
         });
-
-        
-
     </script>
 </body>
 </html>
