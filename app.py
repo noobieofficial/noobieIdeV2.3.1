@@ -3,7 +3,8 @@
 Flask Web Application for Noobie Language Interpreter
 Real-time line-by-line execution with input handling
 """
-
+import eventlet
+eventlet.monkey_patch()
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO, emit
 import os
@@ -20,7 +21,7 @@ from datetime import datetime
 import subprocess
 import io
 import contextlib
-import eventlet
+
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -489,6 +490,6 @@ if __name__ == '__main__':
     os.makedirs('static', exist_ok=True)
     
     # Run the application
-    eventlet.monkey_patch()
+
 
     socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
