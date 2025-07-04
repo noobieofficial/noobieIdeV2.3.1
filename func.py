@@ -68,21 +68,12 @@ def evaluate_expression(expression: str, variables: Dict[str, Variable]) -> Unio
     """Safely evaluate an expression with improved error handling"""
     try:
         expression = preprocess_expression(expression)
-        used_variables = re.findall(r'\b[a-zA-Z_]\w*\b', expression)
-        
-        # Filter only actual variables (not Python keywords/functions)
-        actual_vars = [var for var in used_variables if var in variables]
-        
-        if actual_vars:
-            # Check type consistency
-            types = {variables[var].type for var in actual_vars}
-            if len(types) > 1:
-                raise NoobieError(f"type Error: Variables have different types: {types}")
         
         # Create safe evaluation environment
         safe_dict = {"__builtins__": {}}
         local_scope = {name: var.value for name, var in variables.items()}
         
+        # Prova a valutare l'espressione - quello che conta è se può essere valutata correttamente
         result = eval(expression, safe_dict, local_scope)
         
         if isinstance(result, bool):
