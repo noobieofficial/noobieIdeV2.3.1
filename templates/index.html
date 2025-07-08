@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Noobie Web IDE</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -30,13 +30,17 @@
             background: var(--bg-color);
             color: var(--text-color);
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
         }
 
         .header {
@@ -49,6 +53,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             flex-wrap: wrap;
             gap: 0.75rem;
+            position: relative;
+            z-index: 10;
         }
 
         .logo {
@@ -75,11 +81,18 @@
             align-items: center;
             gap: 0.5rem;
             white-space: nowrap;
+            min-height: 36px;
+            min-width: 36px;
+            justify-content: center;
         }
 
         .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-primary {
@@ -119,6 +132,7 @@
             font-size: 0.875rem;
             color: var(--text-muted);
             min-height: 2.5rem;
+            flex-shrink: 0;
         }
 
         .status-indicator {
@@ -154,6 +168,7 @@
             display: flex;
             overflow: hidden;
             min-height: 0;
+            position: relative;
         }
 
         .editor-panel {
@@ -234,6 +249,7 @@
             white-space: pre;
             overflow: auto;
             min-width: 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         .editor:focus {
@@ -284,6 +300,7 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             min-height: 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         .output-line {
@@ -341,6 +358,7 @@
             border-radius: 0.375rem;
             font-family: 'Courier New', monospace;
             min-width: 0;
+            font-size: 16px; /* Prevents zoom on iOS */
         }
 
         .input-field:focus {
@@ -408,175 +426,95 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-muted);
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-close:hover {
             color: var(--text-color);
         }
 
-        /* Mobile button group */
+        /* Mobile toolbar */
         .mobile-toolbar {
             display: none;
             background: var(--surface-color);
-            padding: 0.5rem;
-            border-top: 1px solid var(--border-color);
+            padding: 0.75rem;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0));
+            border-top: 2px solid var(--border-color);
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 100;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .mobile-toolbar-inner {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px; /* Prevent scrollbar cutoff */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .mobile-toolbar-inner::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
         }
 
         .mobile-toolbar .btn {
             flex-shrink: 0;
+            min-width: 52px;
+            min-height: 52px;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            position: relative;
         }
 
-        /* Responsive design */
-        @media (max-width: 1024px) {
-            .output-panel {
-                width: 50%;
-            }
+        .mobile-toolbar .btn i {
+            font-size: 1.2rem;
         }
 
-        @media (max-width: 768px) {
-            .header {
-                padding: 0.5rem;
-            }
-
-            .logo {
-                font-size: 1.1rem;
-            }
-
-            .btn {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.75rem;
-            }
-
-            .btn i {
-                font-size: 0.875rem;
-            }
-
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .editor-panel {
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                flex: 1 1 60%;
-            }
-            
-            .output-panel {
-                width: 100%;
-                flex: 1 1 40%;
-            }
-
-            .line-numbers {
-                width: 40px;
-                font-size: 12px;
-                padding: 0.75rem 0.25rem;
-            }
-
-            .line-numbers > div {
-                height: 1.5rem;
-                line-height: 1.5rem;
-                padding-right: 0.25rem;
-            }
-
-            .editor {
-                font-size: 12px;
-                padding: 0.75rem;
-            }
-
-            .toolbar {
-                display: none;
-            }
-
-            .mobile-toolbar {
-                display: block;
-                padding-bottom: env(safe-area-inset-bottom, 0.5rem);
-            }
-
-            .container {
-                padding-bottom: 60px;
-            }
+        /* Add labels to mobile buttons */
+        .mobile-toolbar .btn::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0.8;
         }
 
-        @media (max-width: 480px) {
-            .header {
-                justify-content: center;
-            }
-
-            .logo {
-                font-size: 1rem;
-            }
-
-            .editor-actions {
-                display: none;
-            }
-
-            .line-numbers {
-                width: 35px;
-                font-size: 11px;
-            }
-
-            .line-numbers > div {
-                height: 1.5rem;
-                line-height: 1.5rem;
-                padding-right: 0.25rem;
-            }
-
-            .editor {
-                font-size: 11px;
-            }
-
-            .output {
-                font-size: 11px;
-            }
-
-            .modal-content {
-                padding: 1rem;
-            }
-
-            .status-bar {
-                font-size: 0.75rem;
-                padding: 0.375rem 0.75rem;
-            }
+        /* Panel toggle for mobile */
+        .panel-toggle {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
         }
 
-        /* Landscape mode adjustments */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .header {
-                padding: 0.25rem 0.5rem;
-            }
-
-            .status-bar {
-                display: none;
-            }
-
-            .editor-header, .output-header {
-                padding: 0.5rem;
-            }
-
-            .main-content {
-                flex-direction: row;
-            }
-
-            .editor-panel {
-                border-right: 1px solid var(--border-color);
-                border-bottom: none;
-            }
-
-            .output-panel {
-                width: 50%;
-            }
+        .panel-toggle:active {
+            transform: translateY(-50%) scale(0.95);
         }
 
         /* Syntax highlighting */
@@ -589,21 +527,361 @@
         .syntax-operator { color: #d4d4d4; }
         .syntax-boolean { color: #569cd6; }
 
+        /* Mobile responsive breakpoints */
+        @media (max-width: 1024px) {
+            .output-panel {
+                width: 50%;
+            }
+            
+            .btn {
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 85px; /* Increased space for mobile toolbar with labels */
+            }
+
+            .header {
+                padding: 0.5rem;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+            }
+
+            .logo {
+                font-size: 1rem;
+                flex: 1;
+            }
+
+            .toolbar {
+                display: none; /* Hide desktop toolbar on mobile */
+            }
+
+            .status-bar {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+                min-height: 2rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+                position: relative;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex: 1;
+                min-height: 50%;
+            }
+            
+            .output-panel {
+                width: 100%;
+                flex: 1;
+                min-height: 0;
+                position: relative;
+            }
+
+            .editor-header,
+            .output-header {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .editor-title,
+            .output-title {
+                font-size: 0.9rem;
+            }
+
+            .editor-actions {
+                gap: 0.25rem;
+            }
+
+            .editor-actions .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                min-height: 32px;
+                min-width: 32px;
+            }
+
+            .line-numbers {
+                width: 36px;
+                font-size: 12px;
+                padding: 0.75rem 0.25rem;
+            }
+
+            .line-numbers > div {
+                padding-right: 0.25rem;
+            }
+
+            .editor {
+                font-size: 13px;
+                padding: 0.75rem;
+                line-height: 1.4rem;
+            }
+
+            .output {
+                font-size: 12px;
+                padding: 0.75rem;
+            }
+
+            .mobile-toolbar {
+                display: block;
+            }
+
+            .panel-toggle {
+                display: block;
+            }
+
+            .input-panel {
+                padding: 0.75rem;
+            }
+
+            .input-field {
+                padding: 0.75rem;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            /* Stack panels vertically by default */
+            .output-panel {
+                max-height: 50vh;
+            }
+
+            .editor-panel {
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.375rem 0.5rem;
+            }
+
+            .logo {
+                font-size: 0.9rem;
+            }
+
+            .status-bar {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            .editor-header,
+            .output-header {
+                padding: 0.375rem 0.5rem;
+            }
+
+            .editor-title,
+            .output-title {
+                font-size: 0.8rem;
+            }
+
+            .editor-actions {
+                display: none; /* Hide on very small screens */
+            }
+
+            .line-numbers {
+                width: 30px;
+                font-size: 11px;
+                padding: 0.5rem 0.125rem;
+            }
+
+            .editor {
+                font-size: 12px;
+                padding: 0.5rem;
+                line-height: 1.3rem;
+            }
+
+            .output {
+                font-size: 11px;
+                padding: 0.5rem;
+            }
+
+            .mobile-toolbar {
+                padding: 0.375rem;
+            }
+
+            .mobile-toolbar .btn {
+                min-width: 44px;
+                min-height: 44px;
+                padding: 0.5rem;
+            }
+
+            .input-panel {
+                padding: 0.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .input-prompt {
+                font-size: 0.75rem;
+            }
+
+            .input-field {
+                padding: 0.625rem;
+            }
+
+            .panel-toggle {
+                width: 44px;
+                height: 44px;
+                right: 8px;
+            }
+        }
+
+        /* Landscape mode on mobile */
+        @media (max-height: 500px) and (orientation: landscape) and (max-width: 768px) {
+            .header {
+                padding: 0.25rem 0.5rem;
+            }
+
+            .status-bar {
+                display: none; /* Hide status bar in landscape */
+            }
+
+            .editor-header,
+            .output-header {
+                padding: 0.25rem 0.5rem;
+            }
+
+            .main-content {
+                flex-direction: row; /* Side by side in landscape */
+            }
+
+            .editor-panel {
+                border-right: 1px solid var(--border-color);
+                border-bottom: none;
+                flex: 1;
+                max-height: none;
+            }
+
+            .output-panel {
+                width: 50%;
+                max-height: none;
+            }
+
+            .mobile-toolbar {
+                padding: 0.5rem;
+                padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0));
+            }
+
+            .mobile-toolbar .btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 0.625rem;
+                font-size: 1rem;
+            }
+
+            .mobile-toolbar .btn i {
+                font-size: 1.1rem;
+            }
+
+            body {
+                padding-bottom: 75px; /* Adjusted for smaller mobile toolbar */
+            }
+        }
+
+        /* Very small landscape screens */
+        @media (max-height: 400px) and (orientation: landscape) {
+            .editor,
+            .output {
+                padding: 0.375rem;
+                font-size: 11px;
+            }
+
+            .line-numbers {
+                width: 28px;
+                font-size: 10px;
+                padding: 0.375rem 0.125rem;
+            }
+        }
+
         /* Touch-friendly adjustments */
         @media (hover: none) and (pointer: coarse) {
             .btn {
                 min-height: 44px;
                 min-width: 44px;
+                padding: 0.625rem 1rem;
             }
 
             .input-field {
                 min-height: 44px;
+                padding: 0.75rem;
             }
 
             .modal-close {
-                min-width: 44px;
-                min-height: 44px;
+                min-width: 48px;
+                min-height: 48px;
             }
+
+            /* Increase touch targets for small UI elements */
+            .editor-actions .btn {
+                min-height: 40px;
+                min-width: 40px;
+            }
+
+            /* Better scrolling on touch devices */
+            .editor,
+            .output,
+            .mobile-toolbar-inner {
+                -webkit-overflow-scrolling: touch;
+                scroll-behavior: smooth;
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .editor,
+            .output,
+            .line-numbers {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+
+        /* Panel switching for mobile */
+        .mobile-panel-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .output-panel.mobile-panel-hidden {
+                display: none;
+            }
+            
+            .editor-panel.mobile-panel-hidden {
+                display: none;
+            }
+            
+            .output-panel:not(.mobile-panel-hidden) {
+                flex: 1;
+                max-height: none;
+            }
+            
+            .editor-panel:not(.mobile-panel-hidden) {
+                flex: 1;
+                max-height: none;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dark mode system preference support */
+        @media (prefers-color-scheme: light) {
+            /* The IDE is designed for dark mode, but we could add light mode variables here if needed */
         }
     </style>
 </head>
@@ -623,7 +901,7 @@
                     <i class="fas fa-save"></i>
                     <span class="btn-text">Save</span>
                 </button>
-                <input type="file" id="fileInput" style="display:none;" accept=".noobie,.txt" />
+                <input type="file" id="fileInput" style="display:none;" accept=".noob" />
 
                 <button class="btn btn-primary" id="runBtn">
                     <i class="fas fa-play"></i>
@@ -661,7 +939,7 @@
         </div>
 
         <div class="main-content">
-            <div class="editor-panel">
+            <div class="editor-panel" id="editorPanel">
                 <div class="editor-header">
                     <div class="editor-title">
                         <i class="fas fa-edit"></i>
@@ -680,7 +958,7 @@
                 </div>
             </div>
 
-            <div class="output-panel">
+            <div class="output-panel" id="outputPanel">
                 <div class="output-header">
                     <div class="output-title">
                         <i class="fas fa-terminal"></i>
@@ -704,31 +982,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- Panel toggle button for mobile -->
+        <button class="panel-toggle" id="panelToggle">
+            <i class="fas fa-exchange-alt"></i>
+        </button>
     </div>
 
     <!-- Mobile Toolbar -->
     <div class="mobile-toolbar">
         <div class="mobile-toolbar-inner">
-            <button class="btn btn-primary" id="mobileRunBtn">
+            <button class="btn btn-primary" id="mobileRunBtn" data-label="Run">
                 <i class="fas fa-play"></i>
             </button>
-            <button class="btn btn-danger" id="mobileStopBtn" disabled>
+            <button class="btn btn-danger" id="mobileStopBtn" disabled data-label="Stop">
                 <i class="fas fa-stop"></i>
             </button>
-            <button class="btn btn-secondary" id="mobileOpenBtn">
+            <button class="btn btn-secondary" id="mobilePanelToggleBtn" data-label="Switch">
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobileOpenBtn" data-label="Open">
                 <i class="fas fa-folder-open"></i>
             </button>
-            <button class="btn btn-secondary" id="mobileSaveBtn">
+            <button class="btn btn-secondary" id="mobileSaveBtn" data-label="Save">
                 <i class="fas fa-save"></i>
             </button>
-            <button class="btn btn-secondary" id="mobileResetBtn">
+            <button class="btn btn-secondary" id="mobileResetBtn" data-label="Reset">
                 <i class="fas fa-refresh"></i>
             </button>
-            <button class="btn btn-secondary" id="mobileClearBtn">
+            <button class="btn btn-secondary" id="mobileClearBtn" data-label="Clear">
                 <i class="fas fa-trash"></i>
             </button>
-            <button class="btn btn-secondary" id="mobileExecuteLineBtn">
+            <button class="btn btn-secondary" id="mobileExecuteLineBtn" data-label="Line">
                 <i class="fas fa-terminal"></i>
+            </button>
+            <button class="btn btn-secondary" id="mobilePauseBtn" disabled data-label="Pause">
+                <i class="fas fa-pause"></i>
             </button>
         </div>
     </div>
@@ -770,11 +1059,13 @@
                 this.isExecuting = false;
                 this.currentLine = 0;
                 this.totalLines = 0;
+                this.showingEditor = true; // For mobile panel switching
                 
                 this.initializeElements();
                 this.setupEventListeners();
                 this.setupSocketListeners();
                 this.setupResponsiveFeatures();
+                this.setupMobileFeatures();
             }
 
             initializeElements() {
@@ -795,6 +1086,13 @@
                 this.mobileResetBtn = document.getElementById('mobileResetBtn');
                 this.mobileClearBtn = document.getElementById('mobileClearBtn');
                 this.mobileExecuteLineBtn = document.getElementById('mobileExecuteLineBtn');
+                this.mobilePanelToggleBtn = document.getElementById('mobilePanelToggleBtn');
+                this.mobilePauseBtn = document.getElementById('mobilePauseBtn');
+                
+                // Panel elements
+                this.editorPanel = document.getElementById('editorPanel');
+                this.outputPanel = document.getElementById('outputPanel');
+                this.panelToggle = document.getElementById('panelToggle');
                 
                 this.codeEditor = document.getElementById('codeEditor');
                 this.lineNumbers = document.getElementById('lineNumbers');
@@ -836,6 +1134,9 @@
                 this.mobileResetBtn.addEventListener('click', () => this.resetInterpreter());
                 this.mobileClearBtn.addEventListener('click', () => this.clearOutput());
                 this.mobileExecuteLineBtn.addEventListener('click', () => this.executeCurrentLine());
+                this.mobilePanelToggleBtn.addEventListener('click', () => this.toggleMobilePanels());
+                this.panelToggle.addEventListener('click', () => this.toggleMobilePanels());
+                this.mobilePauseBtn.addEventListener('click', () => this.pauseExecution());
 
                 // Input handling
                 this.submitInputBtn.addEventListener('click', () => this.submitInput());
@@ -868,6 +1169,131 @@
                         return 'Code is currently executing. Are you sure you want to leave?';
                     }
                 });
+
+                // Prevent zoom on double tap for mobile
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (e) => {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+            }
+
+            setupMobileFeatures() {
+                // Initialize mobile panel state
+                this.updateMobilePanelVisibility();
+                
+                // Handle viewport changes
+                const handleViewportChange = () => {
+                    // Update line numbers on viewport change
+                    setTimeout(() => {
+                        this.updateLineNumbers();
+                        this.syncLineNumbers();
+                    }, 100);
+                };
+
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                // Handle virtual keyboard on mobile
+                if ('visualViewport' in window) {
+                    window.visualViewport.addEventListener('resize', () => {
+                        this.handleVirtualKeyboard();
+                    });
+                }
+
+                // Touch gestures for panel switching
+                this.setupTouchGestures();
+            }
+
+            setupTouchGestures() {
+                let startX = 0;
+                let startY = 0;
+                let isSwipeHorizontal = false;
+
+                const handleTouchStart = (e) => {
+                    if (window.innerWidth > 768) return; // Only on mobile
+                    
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    isSwipeHorizontal = false;
+                };
+
+                const handleTouchMove = (e) => {
+                    if (window.innerWidth > 768) return;
+                    
+                    const touch = e.touches[0];
+                    const deltaX = Math.abs(touch.clientX - startX);
+                    const deltaY = Math.abs(touch.clientY - startY);
+                    
+                    if (deltaX > deltaY && deltaX > 50) {
+                        isSwipeHorizontal = true;
+                    }
+                };
+
+                const handleTouchEnd = (e) => {
+                    if (window.innerWidth > 768 || !isSwipeHorizontal) return;
+                    
+                    const touch = e.changedTouches[0];
+                    const deltaX = touch.clientX - startX;
+                    
+                    if (Math.abs(deltaX) > 100) {
+                        // Swipe threshold met
+                        if (deltaX > 0 && !this.showingEditor) {
+                            // Swipe right, show editor
+                            this.showingEditor = true;
+                            this.updateMobilePanelVisibility();
+                        } else if (deltaX < 0 && this.showingEditor) {
+                            // Swipe left, show output
+                            this.showingEditor = false;
+                            this.updateMobilePanelVisibility();
+                        }
+                    }
+                };
+
+                document.addEventListener('touchstart', handleTouchStart, { passive: true });
+                document.addEventListener('touchmove', handleTouchMove, { passive: true });
+                document.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
+
+            toggleMobilePanels() {
+                this.showingEditor = !this.showingEditor;
+                this.updateMobilePanelVisibility();
+            }
+
+            updateMobilePanelVisibility() {
+                if (window.innerWidth <= 768) {
+                    if (this.showingEditor) {
+                        this.editorPanel.classList.remove('mobile-panel-hidden');
+                        this.outputPanel.classList.add('mobile-panel-hidden');
+                        this.panelToggle.innerHTML = '<i class="fas fa-terminal"></i>';
+                        this.mobilePanelToggleBtn.innerHTML = '<i class="fas fa-terminal"></i>';
+                    } else {
+                        this.editorPanel.classList.add('mobile-panel-hidden');
+                        this.outputPanel.classList.remove('mobile-panel-hidden');
+                        this.panelToggle.innerHTML = '<i class="fas fa-edit"></i>';
+                        this.mobilePanelToggleBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    }
+                } else {
+                    // Desktop view - show both panels
+                    this.editorPanel.classList.remove('mobile-panel-hidden');
+                    this.outputPanel.classList.remove('mobile-panel-hidden');
+                }
+            }
+
+            handleVirtualKeyboard() {
+                // Adjust layout when virtual keyboard appears
+                const viewport = window.visualViewport;
+                const offset = window.innerHeight - viewport.height;
+                
+                if (offset > 150) { // Keyboard is likely open
+                    document.body.style.height = `${viewport.height}px`;
+                } else {
+                    document.body.style.height = '100vh';
+                }
             }
 
             setupResponsiveFeatures() {
@@ -875,6 +1301,7 @@
                 if (window.ResizeObserver) {
                     const resizeObserver = new ResizeObserver(() => {
                         this.updateLineNumbers();
+                        this.updateMobilePanelVisibility();
                     });
                     resizeObserver.observe(this.codeEditor);
                 }
@@ -884,8 +1311,22 @@
                     setTimeout(() => {
                         this.updateLineNumbers();
                         this.syncLineNumbers();
+                        this.updateMobilePanelVisibility();
                     }, 100);
                 });
+
+                // Responsive button text
+                const updateButtonText = () => {
+                    const width = window.innerWidth;
+                    const showText = width > 480;
+                    
+                    document.querySelectorAll('.btn-text').forEach(span => {
+                        span.style.display = showText ? 'inline' : 'none';
+                    });
+                };
+                
+                updateButtonText();
+                window.addEventListener('resize', updateButtonText);
 
                 // Initial setup
                 this.updateLineNumbers();
@@ -925,6 +1366,12 @@
                     this.currentLine = 0;
                     this.updateExecutionUI();
                     this.addOutput('Execution started...', 'info');
+                    
+                    // Auto-switch to output panel on mobile when execution starts
+                    if (window.innerWidth <= 768 && this.showingEditor) {
+                        this.showingEditor = false;
+                        this.updateMobilePanelVisibility();
+                    }
                 });
 
                 this.socket.on('execution_finished', (data) => {
@@ -979,20 +1426,20 @@
             }
 
             updateExecutionUI() {
+                const buttons = [this.runBtn, this.mobileRunBtn];
+                const stopButtons = [this.stopBtn, this.mobileStopBtn];
+                const pauseButtons = [this.pauseBtn, this.mobilePauseBtn];
+                
                 if (this.isExecuting) {
-                    this.runBtn.disabled = true;
-                    this.stopBtn.disabled = false;
-                    this.pauseBtn.disabled = false;
-                    this.mobileRunBtn.disabled = true;
-                    this.mobileStopBtn.disabled = false;
+                    buttons.forEach(btn => btn.disabled = true);
+                    stopButtons.forEach(btn => btn.disabled = false);
+                    pauseButtons.forEach(btn => btn.disabled = false);
                     this.statusDot.classList.add('executing');
                     this.statusText.textContent = 'Executing...';
                 } else {
-                    this.runBtn.disabled = false;
-                    this.stopBtn.disabled = true;
-                    this.pauseBtn.disabled = true;
-                    this.mobileRunBtn.disabled = false;
-                    this.mobileStopBtn.disabled = true;
+                    buttons.forEach(btn => btn.disabled = false);
+                    stopButtons.forEach(btn => btn.disabled = true);
+                    pauseButtons.forEach(btn => btn.disabled = true);
                     this.statusDot.classList.remove('executing');
                     this.statusText.textContent = this.isConnected ? 'Ready' : 'Disconnected';
                 }
@@ -1027,12 +1474,24 @@
             }
 
             pauseExecution() {
+                const pauseButtons = [this.pauseBtn, this.mobilePauseBtn];
+                
                 if (this.pauseBtn.innerHTML.includes('Pause')) {
                     this.socket.emit('pause_execution');
-                    this.pauseBtn.innerHTML = '<i class="fas fa-play"></i><span class="btn-text">Resume</span>';
+                    pauseButtons.forEach(btn => {
+                        btn.innerHTML = '<i class="fas fa-play"></i><span class="btn-text">Resume</span>';
+                        if (btn === this.mobilePauseBtn) {
+                            btn.setAttribute('data-label', 'Resume');
+                        }
+                    });
                 } else {
                     this.socket.emit('resume_execution');
-                    this.pauseBtn.innerHTML = '<i class="fas fa-pause"></i><span class="btn-text">Pause</span>';
+                    pauseButtons.forEach(btn => {
+                        btn.innerHTML = '<i class="fas fa-pause"></i><span class="btn-text">Pause</span>';
+                        if (btn === this.mobilePauseBtn) {
+                            btn.setAttribute('data-label', 'Pause');
+                        }
+                    });
                 }
             }
 
@@ -1059,6 +1518,12 @@
                 }
 
                 this.socket.emit('execute_line', { line: currentLine });
+                
+                // Switch to output panel on mobile after executing
+                if (window.innerWidth <= 768 && this.showingEditor) {
+                    this.showingEditor = false;
+                    this.updateMobilePanelVisibility();
+                }
             }
 
             clearOutput() {
@@ -1088,6 +1553,12 @@
                 this.inputPanel.classList.add('active');
                 this.inputField.focus();
                 this.inputField.value = '';
+                
+                // Auto-switch to output panel on mobile when input is requested
+                if (window.innerWidth <= 768 && this.showingEditor) {
+                    this.showingEditor = false;
+                    this.updateMobilePanelVisibility();
+                }
             }
 
             hideInputPanel() {
@@ -1178,13 +1649,13 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'code.noobie';
+                a.download = 'code.noob';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                this.addOutput('File saved: code.noobie', 'info');
+                this.addOutput('File saved: code.noob', 'info');
             }
         }
 
@@ -1214,24 +1685,10 @@ ENDO
 
 # Say goodbye
 SAY "Thanks for using Noobie!" end`;
-
             if (!ide.codeEditor.value.trim()) {
                 ide.codeEditor.value = sampleCode;
                 ide.updateLineNumbers();
             }
-            
-            // Handle responsive button text
-            const updateButtonText = () => {
-                const width = window.innerWidth;
-                const showText = width > 480;
-                
-                document.querySelectorAll('.btn-text').forEach(span => {
-                    span.style.display = showText ? 'inline' : 'none';
-                });
-            };
-            
-            updateButtonText();
-            window.addEventListener('resize', updateButtonText);
         });
     </script>
 </body>
