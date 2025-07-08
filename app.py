@@ -3,22 +3,22 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, render_template, request, jsonify, session
-from flask_socketio import SocketIO, emit
 import os
+import io
 import sys
-import threading
-import queue
+import json
+import time
 import uuid
-import tempfile
+import queue
 import shutil
 import signal
-import time
-import json
-from datetime import datetime
-import subprocess
-import io
+import tempfile
+import threading
 import contextlib
+import subprocess
+from datetime import datetime
+from flask_socketio import SocketIO, emit
+from flask import Flask, render_template, request, jsonify, session
 
 
 # Add current directory to path for imports
@@ -26,8 +26,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Try to import Noobie interpreter
 try:
-    from noobie02 import NoobieInterpreter
     from func import *
+    from noobie02 import NoobieInterpreter
 except ImportError as e:
     print(f"Error importing Noobie modules: {e}")
     print("Make sure noobie02.py and func.py are in the same directory")
@@ -39,10 +39,7 @@ except ImportError as e:
         def _process_line(self, line, line_num):
             # Simple stub implementation
             line = line.strip()
-            if line.startswith('SAY'):
-                msg = line[3:].strip().strip('"\'')
-                print(msg)
-            elif line.startswith('CREATE'):
+            if line.startswith('CREATE'):
                 parts = line.split()
                 if len(parts) >= 3:
                     var_name = parts[2]
@@ -69,29 +66,66 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'noobie-secret-key-2024'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global storage for active sessions
-active_sessions = {}
-session_interpreters = {}
-session_threads = {}
 session_inputs = {}
+active_sessions = {}
+session_threads = {}
+session_interpreters = {}
 
 
 class WebOutputCapture:
-    """Capture output for web display"""
+    """Capture output for web display with proper line handling"""
     def __init__(self, session_id, output_type='stdout'):
         self.session_id = session_id
         self.output_type = output_type
         self.buffer = ""
+        self.line_buffer = ""  # Buffer per accumulate testo sulla stessa riga
         
     def write(self, text):
-        if text.strip():
-            socketio.emit('output', {
-                'type': self.output_type,
-                'text': text,
-                'timestamp': datetime.now().isoformat()
-            }, room=self.session_id)
+        if not text:
+            return
+            
+        # Aggiungi il testo al buffer di riga
+        self.line_buffer += text
+        
+        # Se il testo contiene newline, invia tutto quello che c'è prima del newline
+        if '\n' in text:
+            # Dividi il buffer in righe
+            lines = self.line_buffer.split('\n')
+            
+            # Invia tutte le righe complete (tutte tranne l'ultima)
+            for line in lines[:-1]:
+                if line or self.line_buffer.endswith('\n'):  # Invia anche righe vuote se esplicite
+                    socketio.emit('output', {
+                        'type': self.output_type,
+                        'text': line,
+                        'timestamp': datetime.now().isoformat()
+                    }, room=self.session_id)
+            
+            # Mantieni l'ultima parte (dopo l'ultimo newline) nel buffer
+            self.line_buffer = lines[-1]
+        
+        # Se non c'è newline, il testo rimane nel buffer e verrà inviato
+        # quando arriverà il prossimo newline o alla fine dell'esecuzione
         
     def flush(self):
-        pass
+        # Invia qualsiasi contenuto rimanente nel buffer
+        if self.line_buffer:
+            socketio.emit('output', {
+                'type': self.output_type,
+                'text': self.line_buffer,
+                'timestamp': datetime.now().isoformat()
+            }, room=self.session_id)
+            self.line_buffer = ""
+            
+    def flush_line(self):
+        """Forza l'invio della riga corrente (utile per input prompt)"""
+        if self.line_buffer:
+            socketio.emit('output', {
+                'type': self.output_type,
+                'text': self.line_buffer,
+                'timestamp': datetime.now().isoformat()
+            }, room=self.session_id)
+            self.line_buffer = ""
 
 
 class WebInputHandler:
@@ -139,6 +173,9 @@ class NoobieWebInterpreter:
         self.running = False
         self.paused = False
         
+        # Collegamento per permettere al input handler di accedere all'output capture
+        self.input_handler.output_capture = self.output_capture
+        
     def setup_io_redirection(self):
         """Setup input/output redirection"""
         # Store original handlers
@@ -152,6 +189,8 @@ class NoobieWebInterpreter:
         
         # Custom input function
         def web_input(prompt=''):
+            # Flush any pending output before showing input prompt
+            self.output_capture.flush_line()
             return self.input_handler.get_input(prompt)
             
         if isinstance(__builtins__, dict):
@@ -180,6 +219,10 @@ class NoobieWebInterpreter:
             
             # Execute the line using the process_line method
             self.interpreter._process_line(line.strip(), 1)
+            
+            # IMPORTANTE: Flush l'output per assicurarsi che tutto sia inviato
+            self.output_capture.flush()
+            self.error_capture.flush()
             
             # Send success signal
             socketio.emit('line_executed', {
@@ -226,6 +269,10 @@ class NoobieWebInterpreter:
             
             # Execute the entire code using the original interpreter
             self.interpreter.interpret(code)
+            
+            # IMPORTANTE: Flush tutto l'output alla fine
+            self.output_capture.flush()
+            self.error_capture.flush()
             
         except Exception as e:
             socketio.emit('output', {
@@ -488,6 +535,4 @@ if __name__ == '__main__':
     os.makedirs('static', exist_ok=True)
     
     # Run the application
-
-
     socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
